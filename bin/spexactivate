@@ -1,12 +1,22 @@
 #!/usr/bin/env bash
 # vim: tabstop=4 shiftwidth=4 expandtab
+usage() {
+    echo "usage: source $(basename $0) {release}" >&2
+}
+
+if [ "${BASH_SOURCE[0]}" -ef "$0" ]; then
+    echo "ERROR: This script is not designed to be executed." >&2
+    usage
+    exit 1
+fi
+
 topdir="$( dirname $(cd $(dirname ${BASH_SOURCE[0]}) && pwd) )"
 datadir="${topdir}/share"
 spexdir="${topdir}/spex"
 
 spextool_version="$1"
 if [ -z "$spextool_version" ]; then
-    echo "usage: source $(basename $0) {release}" >&2
+    usage
     return 1
 fi
 
@@ -27,6 +37,10 @@ fi
 paths="+${datadir}:+${root}"
 if ! [[ "$IDL_PATH" =~ .*"$paths".* ]]; then
     unset IDL_PATH
-    IDL_PATH="${paths}:${IDL_PATH_OLD}:+${IDL_DIR}"
+    if [[ "$IDL_PATH_OLD" == "+${IDL_DIR}" ]]; then
+        IDL_PATH="${paths}:${IDL_PATH_OLD}"
+    else
+        IDL_PATH="${paths}:${IDL_PATH_OLD}:+${IDL_DIR}"
+    fi 
 fi
 export IDL_PATH
