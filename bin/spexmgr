@@ -165,7 +165,7 @@ usage() {
     echo "  --help    -h        this message"
     echo
     echo "Commands:"
-    echo "  clean               Removed cached packages/archives"
+    echo "  clean               Remove cached packages/archives"
     echo "  list                List available spextool releases"
     echo "  install {release}   Install a spextool release"
     echo
