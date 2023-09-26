@@ -161,7 +161,7 @@ usage() {
     echo "usage: $(basename $0) [-h] {command} [arg ...]"
     echo
     echo "Arguments:"
-    echo "  --help              this message"
+    echo "  --help    -h        this message"
     echo
     echo "Commands:"
     echo "  clean               Removed cached packages/archives"
