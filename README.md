@@ -92,6 +92,20 @@ The activation script prepends `share/` and `spex/4.1` to `IDL_PATH`, and any pr
 ```
 $ idl
 IDL> mc_testspextoolpath
+% Compiled module: MC_TESTSPEXTOOLPATH.
+% Compiled module: FILE_WHICH.
+% Compiled module: READCOL.
+% Compiled module: REMCHAR.
+% Compiled module: GETTOK.
+% READCOL: 1 valid lines read
+
+Spextool version 4.1 loaded.
+
+The Astronomy User's Library directories are in your IDL path.
+
+The Markwardt MPFIT Library directories are in your IDL path.
+
+The IDL paths are set correctly.
 ```
 
 *or earlier:*
