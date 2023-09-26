@@ -152,6 +152,7 @@ release_install() {
     local version="$2"
     pushd "${spexdir}"
         mkdir -p ${version}
+        msg_info Installing: v${version}
         tar -xf "$package" --strip-components=1 -C ${version}
     popd
 }
