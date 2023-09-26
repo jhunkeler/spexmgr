@@ -1,0 +1,228 @@
+#!/usr/bin/env bash
+# vim: tabstop=4 shiftwidth=4 expandtab
+topdir="$( dirname $(cd $(dirname ${BASH_SOURCE[0]}) && pwd) )"
+cachedir="${topdir}/cache"
+datadir="${topdir}/share"
+spexdir="${topdir}/spex"
+
+release_server="http://irtfweb.ifa.hawaii.edu/~spex/Spextool"
+releases=(
+    1.4 
+    1.5
+    2.0
+    2.1
+    2.2
+    2.3
+    3.1
+    3.2
+    3.3
+    3.4
+    4.0
+    4.0.1
+    4.0.2
+    4.0.3
+    4.1
+)
+dependencies=(
+    https://github.com/wlandsman/IDLAstro/archive/refs/heads/master.tar.gz 1 IDLAstro
+    https://idlastro.gsfc.nasa.gov/ftp/coyote_astron.tar.gz 1 coyote
+    https://pages.physics.wisc.edu/~craigm/idl/down/cmtotal.tar.gz 0 cmtotal
+)
+
+archive_suffix="tar.gz"
+archive_name="Spextool"
+archive_version=
+
+pushd() {
+    command pushd "$1" &>/dev/null
+}
+
+popd() {
+    command popd &>/dev/null
+}
+
+msg_error() {
+    echo "ERROR: $@" >&2
+}
+
+msg_warn() {
+    echo "WARN: $@" >&2
+}
+
+msg_info() {
+    echo "INFO: $@" >&2
+}
+
+idl_exists() {
+    ([ type -a idl ] || [ type -p idl ]) && [ -n "$IDL_DIR" ]
+}
+
+initialize() {
+    mkdir -p "$spexdir" \
+        "$cachedir" \
+        "$datadir"
+
+    if ! idl_exists; then
+        msg_warn IDL is not initialized, or not installed.
+    fi
+}
+
+release_list() {
+    local fmt="%-10s %-10s\n"
+    local installed=()
+    echo "==========="
+    echo " Available"
+    echo "==========="
+    for x in "${releases[@]}"; do
+        mark=""
+        if release_exists $x; then
+            installed+=($x)
+            continue
+        fi
+        echo "  $x"
+    done
+
+    if (( ${#installed[@]} )); then
+        echo
+        echo "==========="
+        echo " Installed"
+        echo "==========="
+        for x in "${installed[@]}"; do
+            echo "  $x"
+        done
+    fi
+}
+
+release_exists() {
+    local version="$1"
+    test -d "$spexdir/$version"
+}
+
+release_download() {
+    local version="$1"
+    local package="${archive_name}_v${version}.${archive_suffix}"
+
+    pushd "$cachedir"
+        if [ -f "$package" ]; then
+            msg_info Using cached package: $package
+        else
+            msg_info Downloading: $package
+            if ! curl -L -O "$release_server/$package"; then
+                msg_err Unable to download $package
+                return 1
+            fi
+        fi
+    popd
+    echo "$cachedir/$package $version"
+}
+
+dep_install() {
+    pushd "$cachedir"
+        for ((i=0; i < ${#dependencies[@]}; i+=3)); do 
+            local dep="${dependencies[i]}"
+            local archive="$(basename $dep)"
+            if [ -f "$archive" ]; then
+                continue
+            fi
+            msg_info Downloading: $dep
+            if ! curl -L -O "$dep"; then
+                msg_error Unable to download $dep
+                return 1
+            fi
+        done
+
+        for ((i=0; i < ${#dependencies[@]}; i+=3)); do 
+            local archive="$(basename ${dependencies[i]})"
+            local strip_level="${dependencies[i+1]}"
+            local dname="${dependencies[i+2]}"
+            local dest="${datadir}/${dname}"
+            if [ -d "$dest" ]; then
+                msg_info $dname is already installed
+                continue
+            fi
+            mkdir -p "$dest"
+            msg_info Installing dependency: $dname
+            tar -xf "$archive" --strip-components=$strip_level -C "$dest"
+        done
+    popd
+}
+
+release_install() {
+    local package="$1"
+    local version="$2"
+    pushd "${spexdir}"
+        mkdir -p ${version}
+        tar -xf "$package" --strip-components=1 -C ${version}
+    popd
+}
+
+
+usage() {
+    echo "usage: $(basename $0) [-h] {command} [arg ...]"
+    echo
+    echo "Arguments:"
+    echo "  --help      this message"
+    echo
+    echo "Commands:"
+    echo "  clean               Removed cached packages/archives"
+    echo "  list                List available spextool releases"
+    echo "  install {release}   Install a spextool release"
+    echo
+}
+
+version=4.1
+
+# main()
+initialize
+
+if (( $# < 1 )); then
+    msg_error Not enough arguments
+    usage
+    exit 1
+fi
+
+while [[ $# != 0 ]]; do
+    key="$1"
+    case "$key" in
+        clean)
+            do_clean=1
+            ;;
+        list)
+            do_list=1
+            ;;
+        install)
+            do_install=1
+            version=$2
+            if [ -z "$version" ]; then
+                msg_error install requires a release version
+                release_list
+                exit 1
+            fi
+            shift
+            ;;
+        *)
+            ;;
+    esac
+    shift
+done
+
+if (( do_clean )); then
+    msg_info Cleaning: $cachedir
+    if [ -z "$cachedir" ] || [ "$cachedir" = "/" ]; then
+        msg_error "Refusing to clean unsafe path: '$cachedir'"
+        exit 1
+    fi
+    rm -rf "$cachedir"/*
+elif (( do_list )); then
+    release_list
+elif (( do_install )); then
+    if release_exists $version; then
+        msg_info $archive_name v$version is already installed
+    else
+        read package package_version <<< $(release_download $version)
+        release_install $package $package_version
+    fi
+    dep_install
+fi
+
+

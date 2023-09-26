@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# vim: tabstop=4 shiftwidth=4 expandtab
+topdir="$( dirname $(cd $(dirname ${BASH_SOURCE[0]}) && pwd) )"
+datadir="${topdir}/share"
+spexdir="${topdir}/spex"
+
+spextool_version="$1"
+if [ -z "$spextool_version" ]; then
+    echo "usage: source $(basename $0) {release}" >&2
+    return 1
+fi
+
+root="${spexdir}/${spextool_version}"
+if [ ! -d "$root" ]; then
+    echo "$spextool_version is not installed" >&2
+    return 1
+fi
+
+if [ -n "$IDL_PATH" ] && [ -z "$IDL_PATH_OLD" ]; then
+    IDL_PATH_OLD="$IDL_PATH"
+    export IDL_PATH_OLD
+else
+    IDL_PATH_OLD="+$IDL_DIR"
+    export IDL_PATH_OLD
+fi
+
+paths="+${datadir}:+${root}"
+if ! [[ "$IDL_PATH" =~ .*"$paths".* ]]; then
+    unset IDL_PATH
+    IDL_PATH="${paths}:${IDL_PATH_OLD}:+${IDL_DIR}"
+fi
+export IDL_PATH
