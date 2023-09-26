@@ -119,6 +119,6 @@ Commands:
 ### spexactivate
 
 ```
-usage: source bash {release}
+usage: source spexactivate {release}
 ```
 
