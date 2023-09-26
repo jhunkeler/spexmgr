@@ -161,7 +161,7 @@ usage() {
     echo "usage: $(basename $0) [-h] {command} [arg ...]"
     echo
     echo "Arguments:"
-    echo "  --help      this message"
+    echo "  --help              this message"
     echo
     echo "Commands:"
     echo "  clean               Removed cached packages/archives"
@@ -184,6 +184,10 @@ fi
 while [[ $# != 0 ]]; do
     key="$1"
     case "$key" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
         clean)
             do_clean=1
             ;;
