@@ -11,7 +11,7 @@ A quality of life utility for managing Spextool installations
 
 **Clone the spexmgr repository**
 ```
-git clone https://github.com/jhunkeler/spexmgr"
+git clone https://github.com/jhunkeler/spexmgr
 ```
 
 **Add spexmgr to your path**
