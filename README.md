@@ -1,6 +1,6 @@
 # Spextool Manager
 
-A quality of life utility for managing Spextool installations
+A quality of life utility for managing [Spextool](http://irtfweb.ifa.hawaii.edu/~spex/observer) installations
 
 ## Features
 
