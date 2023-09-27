@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim: tabstop=4 shiftwidth=4 expandtab
 usage() {
-    echo "usage: source $(basename $0) {release}" >&2
+    echo "usage: source $(basename ${BASH_SOURCE[0]}) {release}" >&2
 }
 
 if [ "${BASH_SOURCE[0]}" -ef "$0" ]; then
